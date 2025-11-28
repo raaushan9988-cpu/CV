@@ -1,0 +1,621 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>FocusForge — NEO Leaderboard Edition (All-In-One)</title>
+<meta name="theme-color" content="#02040a">
+<style>
+  /* -------------------------
+     NEO-FUTURISTIC THEME + RESET
+     ------------------------- */
+  :root{
+    --bg:#03050b;
+    --panel: rgba(255,255,255,0.03);
+    --glass: rgba(255,255,255,0.03);
+    --neon1:#7cfffb;
+    --neon2:#a16bff;
+    --accent:#ffd700;
+    --danger:#ff4d4f;
+    --muted: rgba(255,255,255,0.65);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,ui-sans-serif,system-ui,Arial,sans-serif}
+  body{background:linear-gradient(135deg,#02030a 0%, #050816 100%);color:#e8f0ff;min-height:100vh}
+  header{padding:18px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.02);backdrop-filter: blur(6px)}
+  h1{font-size:22px;letter-spacing:0.6px}
+  .subtitle{color:var(--muted);font-size:13px;margin-top:6px}
+  .container{max-width:1200px;margin:22px auto;padding:0 16px}
+  .layout{display:grid;grid-template-columns:360px 1fr;gap:18px;align-items:start}
+  @media(max-width:980px){ .layout{grid-template-columns:1fr} }
+
+  /* left column card */
+  .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:16px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 10px 40px rgba(0,0,0,0.6)}
+  .profile-row{display:flex;gap:12px;align-items:center}
+  .avatar{width:88px;height:88px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--neon1),var(--neon2));color:#001;margin-right:6px;font-size:28px;border:3px solid rgba(255,255,255,0.06)}
+  .progress{height:14px;background:rgba(255,255,255,0.03);border-radius:999px;margin-top:8px;overflow:hidden}
+  .progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--neon1),var(--neon2));transition:width 600ms cubic-bezier(.2,.9,.3,1)}
+  .lvl{margin-top:8px;font-weight:700}
+  .streak{margin-top:6px;color:var(--accent);font-weight:800}
+  .stat-grid{display:flex;gap:8px;margin-top:12px}
+  .stat{flex:1;background:rgba(255,255,255,0.02);padding:10px;border-radius:10px;text-align:center}
+  .stat .val{font-weight:900;font-size:18px}
+  .muted{color:var(--muted)}
+
+  /* quests neo */
+  .quests-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:12px}
+  .quest-card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.02);position:relative;overflow:hidden}
+  .quest-icon{font-size:26px}
+  .quest-title{font-weight:800;margin-top:6px}
+  .quest-desc{font-size:13px;color:var(--muted);margin-top:6px}
+  .quest-actions{display:flex;gap:8px;margin-top:10px}
+
+  /* pomodoro card */
+  .timer-display{font-size:40px;text-align:center;margin:12px 0;font-weight:900;color:transparent;background:linear-gradient(90deg,var(--neon1),var(--neon2));-webkit-background-clip:text;background-clip:text}
+  .controls{display:flex;gap:8px;justify-content:center}
+  .btn{padding:8px 12px;border-radius:999px;border:none;cursor:pointer;font-weight:800;letter-spacing:0.3px}
+  .btn-main{background:linear-gradient(90deg,var(--neon1),var(--neon2));color:#001}
+  .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+  .btn-danger{background:var(--danger);color:#fff}
+
+  /* overlay (shield lock) */
+  .overlay{position:fixed;inset:0;background:radial-gradient(circle at 20% 10%, rgba(0,0,0,0.95), rgba(0,0,0,0.99));display:none;align-items:center;justify-content:center;z-index:9999;flex-direction:column}
+  .overlay .panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:28px;border-radius:16px;text-align:center;border:1px solid rgba(255,255,255,0.03);box-shadow: 0 20px 80px rgba(0,0,0,0.8)}
+  .overlay h2{font-size:28px;margin-bottom:8px}
+  .overlay .counter{font-weight:900;font-size:44px;color:var(--neon1);margin-top:6px}
+
+  /* NEON LEADERBOARD — futuristic hologram cards */
+  .leaderboard-card{margin-top:12px;padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(16,16,32,0.45), rgba(6,6,12,0.45));border:1px solid rgba(124,255,251,0.08)}
+  .lb-header{display:flex;justify-content:space-between;align-items:center}
+  .lb-grid{margin-top:12px;display:flex;flex-direction:column;gap:8px;transition:all 400ms ease}
+  .lb-row{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:10px;background:linear-gradient(90deg, rgba(124,255,251,0.02), rgba(161,107,255,0.02));border:1px solid rgba(255,255,255,0.02);backdrop-filter: blur(6px);transition:transform 450ms cubic-bezier(.2,.95,.2,1)}
+  .lb-row.gold{box-shadow:0 10px 40px rgba(124,255,251,0.06);border:1px solid rgba(124,255,251,0.16)}
+  .lb-row .rank{font-weight:900;background:linear-gradient(90deg,var(--neon1),var(--neon2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .player-name{font-weight:800}
+  .player-meta{color:var(--muted);font-size:13px}
+  .spark{position:relative}
+  .spark::after{content:"";position:absolute;right:-8px;top:-8px;width:8px;height:8px;border-radius:50%;background:linear-gradient(90deg,var(--neon1),var(--neon2));box-shadow:0 6px 20px rgba(161,107,255,0.4);opacity:0;transition:opacity 450ms}
+  .lb-row.movedup .spark::after{opacity:1;animation:pop 800ms ease}
+  @keyframes pop{0%{transform:scale(0.4);opacity:0}50%{transform:scale(1.12);opacity:1}100%{transform:scale(1);opacity:1}}
+
+  /* small */
+  .small{font-size:13px;color:var(--muted)}
+  .activity{font-size:13px;color:var(--muted);max-height:180px;overflow:auto;padding-right:8px;margin-top:8px}
+
+  /* neon badge */
+  .badge{padding:6px 10px;border-radius:999px;background:linear-gradient(90deg,var(--neon2),var(--neon1));color:#001;font-weight:800}
+
+  /* animations for when user levels up */
+  .level-up{
+    position:fixed;left:50%;transform:translateX(-50%);top:14%;
+    background:linear-gradient(90deg,var(--neon1),var(--neon2));color:#001;padding:12px 20px;border-radius:12px;box-shadow:0 20px 80px rgba(124,255,251,0.06);z-index:22000;display:none;font-weight:900
+  }
+
+</style>
+</head>
+<body>
+<header>
+  <h1>⚔ FocusForge — NEO Leaderboard Edition</h1>
+  <div class="subtitle">All-in-one: Shield, Pomodoro, XP, Reward Chest & Neon Leaderboard — local + extension hooks</div>
+</header>
+
+<div class="container">
+  <div class="layout">
+    <!-- LEFT COLUMN -->
+    <div class="card">
+      <div class="profile-row">
+        <div class="avatar">⚔</div>
+        <div style="flex:1">
+          <div style="font-weight:900">Your Focus Sword</div>
+          <div class="progress"><div id="xpBar" class="progress-fill" style="width:0%"></div></div>
+          <div class="lvl" id="lvlText">Level 1 • 0 XP</div>
+          <div class="streak" id="streakText">🔥 Streak: 0</div>
+          <div class="stat-grid">
+            <div class="stat"><div class="val" id="totalXP">0</div><div class="small">Total XP</div></div>
+            <div class="stat"><div class="val" id="sprintsDone">0</div><div class="small">Sprints</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <button class="btn btn-main" id="openShieldPanel">Disruption Shield</button>
+        <button class="btn btn-ghost" id="openLeaderboard">Leaderboard</button>
+      </div>
+
+      <div style="margin-top:12px" class="small muted">Pro tip: use Shield + Pomodoro combos to climb the leaderboard. Judges love sticky engagement!</div>
+
+      <div class="leaderboard-card" id="leaderboardPanel" style="display:block">
+        <div class="lb-header">
+          <div style="font-weight:900">🏆 Neon Leaderboard</div>
+          <div class="small">Local • Top players</div>
+        </div>
+        <div id="lbGrid" class="lb-grid" style="margin-top:12px"></div>
+
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+          <input id="playerName" class="input" placeholder="Your name (for leaderboard)" style="flex:1;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:#fff" />
+          <button class="btn btn-main" id="submitScore">Submit</button>
+        </div>
+      </div>
+
+      <div style="margin-top:12px" class="card small">
+        <div style="font-weight:900">Activity</div>
+        <div id="activity" class="activity"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:900">🔥 Pomodoro & Quests</div>
+          <div class="small muted">Earn XP — level up — unlock chest</div>
+        </div>
+
+        <div class="quests-grid" id="questsGrid"></div>
+
+        <div style="margin-top:12px;padding-top:12px;border-top:1px dashed rgba(255,255,255,0.02)">
+          <div style="font-weight:900">Pomodoro Forge</div>
+          <div class="timer-display" id="timerDisplay">25:00</div>
+          <div class="controls">
+            <button class="btn btn-main" id="startPom">Start Sprint</button>
+            <button class="btn btn-ghost" id="pausePom" disabled>Pause</button>
+            <button class="btn btn-ghost" id="resetPom">Reset</button>
+            <button class="btn btn-main" id="quick10">Quick 10</button>
+          </div>
+          <div style="margin-top:8px" class="small muted">Keyboard: S to start/pause, R to reset</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:900">🛡 Disruption Shield (Block IG + YT)</div>
+          <div class="small muted">Enter accounts + choose mode</div>
+        </div>
+
+        <div style="margin-top:8px" class="small muted">Note: Browser page enforces overlay + sends a message to an extension (if loaded) to enforce real blocking.</div>
+
+        <div style="margin-top:8px">
+          <label class="small muted">Instagram handle (no @)</label>
+          <input id="igInput" class="input" placeholder="your_ig" style="width:100%;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:#fff" />
+          <label class="small muted" style="margin-top:8px">YouTube channel or id (e.g., channel/UC... or user/name)</label>
+          <input id="ytInput" class="input" placeholder="channel/UC..." style="width:100%;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:#fff" />
+
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <select id="modeSelect" style="flex:1;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:#fff">
+              <option value="both" selected>Block BOTH (accounts + entire sites)</option>
+              <option value="site">Block ENTIRE sites</option>
+              <option value="account">Block ONLY specified accounts</option>
+            </select>
+            <select id="durSelect" style="width:140px;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:#fff">
+              <option value="15">15m</option>
+              <option value="30">30m</option>
+              <option value="60" selected>60m</option>
+              <option value="120">120m</option>
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+
+          <div id="customRow" style="display:none;margin-top:8px"><input id="customMins" placeholder="Minutes" style="width:120px;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:#fff" /></div>
+
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button class="btn btn-main" id="activateShield">Activate Shield</button>
+            <button class="btn btn-ghost" id="cancelShield" disabled>Cancel</button>
+            <button class="btn btn-danger" id="demoShield">Demo 1m Shield</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <div style="font-weight:900">Leaderboard Tips</div>
+        <div class="small muted" style="margin-top:6px">Earn XP via Pomodoro and Quests. Submit your name to be ranked. Leaderboard is local (cloud option available).</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- overlay used to lock the page during Shield -->
+<div class="overlay" id="shieldOverlay" aria-hidden="true">
+  <div class="panel">
+    <h2>🚫 Distraction Shield Active</h2>
+    <div class="small muted" style="margin-top:6px">Instagram & YouTube are blocked — stay focused until the timer ends.</div>
+    <div class="counter" id="shieldCounter">60:00</div>
+    <div style="margin-top:12px">
+      <button class="btn btn-ghost" id="giveUpShield">Give Up (End Early)</button>
+    </div>
+    <div class="small muted" style="margin-top:10px">Leaving the tab or closing the page may apply a penalty.</div>
+  </div>
+</div>
+
+<div class="level-up" id="levelUpToast">LEVEL UP! + You gained XP</div>
+
+<!-- audio -->
+<audio id="sfx1" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg" preload="auto"></audio>
+<audio id="sfx2" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" preload="auto"></audio>
+
+<script>
+/* =============
+   FULL APP LOGIC
+   ============= */
+const STORAGE = 'focusforge_neo_v1';
+const SAMPLE_PLAYERS = [
+  { name:'Arjun', xp:780, streak:3 },
+  { name:'Maya', xp:460, streak:1 },
+  { name:'Aishwarya', xp:610, streak:2 },
+  { name:'Kabir', xp:320, streak:0 }
+];
+
+const DEFAULT = {
+  meName: 'You',
+  totalXP: 0,
+  questsCompleted: 0,
+  streak: { count:0, last: null },
+  sprintsToday: 0,
+  sprintsTotal: 0,
+  achievements: [],
+  activity: [],
+  leaderboard: SAMPLE_PLAYERS.slice()
+};
+
+function loadState(){
+  try {
+    const raw = localStorage.getItem(STORAGE);
+    if(!raw) return JSON.parse(JSON.stringify(DEFAULT));
+    const parsed = JSON.parse(raw);
+    // ensure leaderboard exists
+    if(!parsed.leaderboard || !Array.isArray(parsed.leaderboard)) parsed.leaderboard = SAMPLE_PLAYERS.slice();
+    return parsed;
+  } catch(e){
+    return JSON.parse(JSON.stringify(DEFAULT));
+  }
+}
+function saveState(){ localStorage.setItem(STORAGE, JSON.stringify(state)); }
+
+let state = loadState();
+
+/* Utility */
+const $ = id => document.getElementById(id);
+const nowStr = () => new Date().toLocaleString();
+function addActivity(text){
+  state.activity.unshift([${nowStr()}] ${text});
+  if(state.activity.length>180) state.activity.length=180;
+  saveState();
+  renderActivity();
+}
+
+/* XP / Level helpers */
+function levelFromXP(xp){ return Math.floor(xp/100) + 1; }
+function renderProfile(){
+  $('totalXP').textContent = state.totalXP;
+  $('sprintsDone').textContent = state.sprintsTotal || 0;
+  const lvl = levelFromXP(state.totalXP);
+  const base = (lvl-1)*100;
+  const pct = Math.min(100, Math.round(((state.totalXP - base)/100)*100));
+  $('xpBar').style.width = pct + '%';
+  $('lvlText').textContent = Level ${lvl} • ${state.totalXP} XP;
+  $('streakText').textContent = 🔥 Streak: ${state.streak.count||0};
+}
+
+/* Leaderboard logic */
+function ensurePlayerInLeaderboard(name){
+  if(!state.leaderboard.find(p=>p.name===name)){
+    state.leaderboard.push({ name, xp: state.totalXP, streak: state.streak.count||0 });
+  }
+}
+function submitScore(name){
+  if(!name) name = state.meName || 'You';
+  // find your entry
+  const existing = state.leaderboard.find(p=>p.name===name);
+  if(existing){ existing.xp = Math.max(existing.xp, state.totalXP); existing.streak = state.streak.count||0; }
+  else state.leaderboard.push({ name, xp: state.totalXP, streak: state.streak.count||0 });
+  saveState();
+  renderLeaderboard(true, name);
+  addActivity(Submitted leaderboard score for ${name}: ${state.totalXP} XP);
+}
+
+/* render leaderboard with neon styling and "moved up" indicator */
+function renderLeaderboard(animate=false, highlightName){
+  const grid = $('lbGrid');
+  // sort descending xp
+  state.leaderboard.sort((a,b)=>b.xp - a.xp);
+  // ensure you are present
+  ensurePlayerInLeaderboard(state.meName || 'You');
+  // render
+  grid.innerHTML = '';
+  state.leaderboard.forEach((p, idx) => {
+    const row = document.createElement('div');
+    row.className = 'lb-row';
+    if(idx===0) row.classList.add('gold');
+    if(p.name === highlightName) row.classList.add('movedup');
+    row.innerHTML = <div style="display:flex;gap:12px;align-items:center"><div class="rank">${idx+1}</div><div style="display:flex;flex-direction:column"><div class="player-name">${p.name}${p.name=== (state.meName || 'You') ? ' (You)' : ''}</div><div class="player-meta">Level ${levelFromXP(p.xp)} • ${p.streak||0}d streak</div></div></div><div style="display:flex;gap:12px;align-items:center"><div class="player-xp">${p.xp} XP</div><div class="spark"></div></div>;
+    grid.appendChild(row);
+    // remove movedup class after animation
+    if(row.classList.contains('movedup')){
+      setTimeout(()=> row.classList.remove('movedup'), 900);
+    }
+  });
+}
+
+/* initial leaderboard */
+renderLeaderboard();
+
+/* activity render */
+function renderActivity(){
+  $('activity').innerHTML = state.activity.map(a=><div style="margin-bottom:6px">${a}</div>).join('');
+}
+renderActivity();
+
+/* Quests */
+const QUESTS = [
+  { id:'q1', title:'Slay the Outline Dragon', desc:'Create a 5-min outline', xp:50, time:5*60, icon:'📝' },
+  { id:'q2', title:'Silent Study Siege', desc:'1 hour distraction-free study', xp:100, time:60*60, icon:'⏱' },
+  { id:'q3', title:'Wellness Ritual', desc:'2-min breathing', xp:30, time:2*60, icon:'🧘' },
+  { id:'q4', title:'Daily Detox', desc:'Lock distractions 30min', xp:75, time:30*60, icon:'📵' },
+  { id:'q5', title:'Quick Win', desc:'10-min focused sprint', xp:30, time:10*60, icon:'⚡' }
+];
+const activeQuestTimers = {}; // id -> interval
+
+function renderQuests(){
+  const container = $('questsGrid');
+  container.innerHTML = '';
+  QUESTS.forEach(q=>{
+    const card = document.createElement('div');
+    card.className = 'quest-card';
+    card.innerHTML = <div style="display:flex;gap:10px;align-items:center"><div class="quest-icon">${q.icon}</div><div style="flex:1"><div class="quest-title">${q.title}</div><div class="quest-desc">${q.desc}</div></div></div><div id="meta_${q.id}" style="margin-top:8px;font-size:13px;color:var(--muted)"></div><div class="quest-actions"><button class="btn btn-main" data-start="${q.id}">Start</button><button class="btn btn-ghost" data-claim="${q.id}">Claim ${q.xp} XP</button></div>;
+    container.appendChild(card);
+  });
+
+  // handlers
+  container.querySelectorAll('[data-start]').forEach(btn=>{
+    btn.addEventListener('click', ()=> {
+      const id = btn.getAttribute('data-start');
+      startQuest(id);
+    });
+  });
+  container.querySelectorAll('[data-claim]').forEach(btn=>{
+    btn.addEventListener('click', ()=> {
+      const id = btn.getAttribute('data-claim');
+      claimQuest(id);
+    });
+  });
+}
+renderQuests();
+
+function startQuest(id){
+  const q = QUESTS.find(x=>x.id===id); if(!q) return;
+  if(activeQuestTimers[id]) { alert('Quest already running'); return; }
+  let remaining = q.time;
+  updateQuestMeta(id, Running: ${Math.ceil(remaining/60)} min left);
+  addActivity(Quest started: ${q.title});
+  activeQuestTimers[id] = setInterval(()=>{
+    remaining--;
+    updateQuestMeta(id, Running: ${Math.ceil(remaining/60)} min left);
+    if(remaining<=0){
+      clearInterval(activeQuestTimers[id]); delete activeQuestTimers[id];
+      updateQuestMeta(id, ✅ Ready to claim);
+      addActivity(Quest ready to claim: ${q.title});
+    }
+  }, 1000);
+}
+function updateQuestMeta(id, txt){ const el = $('meta_'+id); if(el) el.textContent = txt; }
+function claimQuest(id){
+  const q = QUESTS.find(x=>x.id===id); if(!q) return;
+  if(activeQuestTimers[id]){ alert('Quest still running — finish it to claim'); return; }
+  state.totalXP += q.xp; state.questsCompleted = (state.questsCompleted||0)+1; addActivity(Quest claimed: ${q.title} (+${q.xp} XP)); saveState(); renderProfile(); renderLeaderboard(true, state.meName);
+  openChest();
+}
+
+/* Reward chest */
+function openChest(){
+  // simple chance
+  const r = Math.random();
+  if(r > 0.6){
+    state.totalXP += 20; addActivity('Chest bonus +20 XP'); playSfx('sfx2'); showLevelUp('Chest! +20 XP');
+  } else {
+    state.totalXP += 10; addActivity('Chest bonus +10 XP'); playSfx('sfx1'); showLevelUp('Chest! +10 XP');
+  }
+  saveState(); renderProfile(); renderLeaderboard(true, state.meName);
+}
+
+/* SFX & level up toast */
+function playSfx(id){ try{ document.getElementById(id).play().catch(()=>{}); }catch(e){} }
+function showLevelUp(msg){
+  const el = $('levelUpToast'); el.textContent = msg; el.style.display='block'; setTimeout(()=> el.style.display='none', 1600);
+}
+
+/* Pomodoro */
+let pom = { running:false, timer:null, seconds:25*60, work:25*60 };
+function renderTimer(){ const mm = String(Math.floor(pom.seconds/60)).padStart(2,'0'); const ss = String(pom.seconds%60).padStart(2,'0'); $('timerDisplay').textContent = ${mm}:${ss}; }
+renderTimer();
+
+$('startPom').addEventListener('click', ()=> {
+  if(pom.running) return;
+  pom.running = true; $('startPom').disabled = true; $('pausePom').disabled=false;
+  addActivity('Pomodoro started');
+  pom.timer = setInterval(()=> {
+    pom.seconds--; renderTimer();
+    if(pom.seconds<=0){
+      clearInterval(pom.timer); pom.running=false; pom.timer=null;
+      const xpEarn = Math.round((pom.work/60) * 2);
+      state.totalXP += xpEarn; state.sprintsTotal=(state.sprintsTotal||0)+1; state.sprintsToday=(state.sprintsToday||0)+1;
+      saveState(); addActivity(Pomodoro complete (+${xpEarn} XP)); renderProfile(); renderLeaderboard(true, state.meName); openChest(); showLevelUp(Pomodoro +${xpEarn} XP);
+      $('startPom').disabled=false; $('pausePom').disabled=true; pom.seconds = pom.work; renderTimer();
+    }
+  }, 1000);
+});
+$('pausePom').addEventListener('click', ()=> {
+  if(!pom.running) return; clearInterval(pom.timer); pom.running=false; pom.timer=null; $('startPom').disabled=false; $('pausePom').disabled=true; addActivity('Pomodoro paused');
+});
+$('resetPom').addEventListener('click', ()=> {
+  clearInterval(pom.timer); pom.running=false; pom.timer=null; pom.seconds = pom.work; renderTimer(); $('startPom').disabled=false; $('pausePom').disabled=true; addActivity('Pomodoro reset');
+});
+$('quick10').addEventListener('click', ()=> { clearInterval(pom.timer); pom.running=false; pom.timer=null; pom.seconds=10*60; renderTimer(); $('startPom').disabled=false; $('pausePom').disabled=true; addActivity('Quick10 ready — press Start'); });
+
+/* Shield: Option C (both) + extension hooks & overlay */
+const shield = { active:false, endsAt: null, mode:null, ig:null, yt:null, penalized:false };
+const overlay = $('shieldOverlay');
+let overlayInterval=null;
+
+$('durSelect').addEventListener('change', ()=> {
+  if($('durSelect').value === 'custom') $('customRow').style.display='block'; else $('customRow').style.display='none';
+});
+
+function secondsFromPicker(){
+  const v = $('durSelect').value;
+  if(v==='custom'){ const m = parseInt($('customMins').value)||0; return Math.max(1, m)*60; }
+  return parseInt(v)*60;
+}
+
+$('activateShield').addEventListener('click', ()=> {
+  const ig = $('igInput').value.trim();
+  const yt = $('ytInput').value.trim();
+  const mode = $('modeSelect').value; // both/site/account
+  const seconds = secondsFromPicker();
+  activateShield({ ig, yt, mode, seconds });
+});
+
+$('demoShield').addEventListener('click', ()=> activateShield({ ig:'demo_ig', yt:'demo_yt', mode:'both', seconds:60 }));
+
+$('cancelShield').addEventListener('click', ()=> {
+  if(!shield.active) return;
+  if(!confirm('Cancel Shield early? This will apply a small penalty.')) return;
+  cancelShield(true);
+});
+
+$('giveUpShield').addEventListener('click', ()=> {
+  if(!shield.active) return;
+  if(!confirm('Give up shield early? You will lose XP.')) return;
+  cancelShield(true);
+});
+
+function activateShield({ig, yt, mode, seconds}){
+  shield.active = true; shield.mode = mode; shield.ig=ig; shield.yt=yt; shield.endsAt = Date.now() + seconds*1000; shield.penalized=false;
+  $('cancelShield').disabled=false;
+  $('activateShield').disabled=true;
+  addActivity(Shield activated (${mode}) for ${Math.round(seconds/60)} min — IG:${ig||'—'} YT:${yt||'—'});
+  // send extension message (page -> content script -> background)
+  window.postMessage({ type:'EXT_SET_BLOCK', payload:{ ig, yt, mode, minutes: Math.round(seconds/60) } }, '*');
+  // overlay
+  showOverlay();
+  saveState();
+}
+
+function cancelShield(penalize=false){
+  if(penalize){
+    const pen = 5; state.totalXP = Math.max(0, state.totalXP - pen); addActivity(Shield ended early — -${pen} XP penalty); renderProfile(); renderLeaderboard(true, state.meName);
+  } else {
+    addActivity('Shield cancelled');
+  }
+  shield.active=false; shield.endsAt=null; shield.mode=null; shield.ig=null; shield.yt=null; shield.penalized=false;
+  $('cancelShield').disabled=true;
+  $('activateShield').disabled=false;
+  hideOverlay();
+  saveState();
+  // ask extension to clear block
+  window.postMessage({ type:'EXT_CLEAR_BLOCK' }, '*');
+}
+
+function showOverlay(){
+  overlay.style.display='flex';
+  updateOverlay();
+  if(overlayInterval) clearInterval(overlayInterval);
+  overlayInterval = setInterval(updateOverlay, 500);
+  // block unload dialog
+  window.addEventListener('beforeunload', blockUnload);
+}
+function hideOverlay(){
+  overlay.style.display='none';
+  if(overlayInterval) clearInterval(overlayInterval);
+  overlayInterval=null;
+  window.removeEventListener('beforeunload', blockUnload);
+}
+function updateOverlay(){
+  if(!shield.active){ hideOverlay(); return; }
+  const secLeft = Math.max(0, Math.ceil((shield.endsAt - Date.now())/1000));
+  const mm = String(Math.floor(secLeft/60)).padStart(2,'0'); const ss = String(secLeft%60).padStart(2,'0');
+  $('shieldCounter').textContent = ${mm}:${ss};
+  // on finish
+  if(secLeft<=0){
+    completeShield();
+  }
+}
+function blockUnload(e){ e.preventDefault(); e.returnValue = 'Shield active — leaving will penalize XP.'; return e.returnValue; }
+
+document.addEventListener('visibilitychange', ()=> {
+  if(document.hidden && shield.active && !shield.penalized){
+    const pen = 5; state.totalXP = Math.max(0, state.totalXP - pen); shield.penalized=true; addActivity(Left tab during Shield -${pen} XP penalty); renderProfile(); renderLeaderboard(true, state.meName);
+    // notify extension optionally
+    window.postMessage({ type:'EXT_SHIELD_BROKEN' }, '*');
+  }
+});
+
+function completeShield(){
+  addActivity('Shield completed — well done! +30 XP');
+  state.totalXP += 30; saveState(); renderProfile(); renderLeaderboard(true, state.meName); showLevelUp('Shield success +30 XP');
+  // notify extension to remove blocking
+  window.postMessage({ type:'EXT_CLEAR_BLOCK' }, '*');
+  shield.active=false; shield.endsAt=null; shield.mode=null; shield.ig=null; shield.yt=null; shield.penalized=false;
+  $('cancelShield').disabled=true;
+  $('activateShield').disabled=false;
+  hideOverlay();
+}
+
+/* Extension message listener (if extension posts back) */
+window.addEventListener('message', (ev)=>{
+  try{
+    const m = ev.data;
+    if(!m || typeof m !== 'object') return;
+    if(m.type === 'EXT_RESPONSE'){ addActivity('Extension: ' + JSON.stringify(m.payload || m.ok)); }
+  }catch(e){}
+});
+
+/* Leaderboard submit & auto updates on XP gain */
+$('submitScore').addEventListener('click', ()=> {
+  const name = $('playerName').value.trim() || (state.meName || 'You');
+  state.meName = name;
+  submitScore(name);
+  saveState();
+});
+
+/* Auto-sync player's score into leaderboard when XP changes (very important) */
+let lastXP = state.totalXP;
+function syncMyScore(){
+  // find my entry or create
+  const me = state.leaderboard.find(x=>x.name === (state.meName || 'You'));
+  if(me) { me.xp = Math.max(me.xp, state.totalXP); me.streak = state.streak.count || 0; }
+  else state.leaderboard.push({ name: state.meName || 'You', xp: state.totalXP, streak: state.streak.count || 0 });
+  saveState();
+  renderLeaderboard(true, state.meName);
+}
+
+/* watch xp changes: simply run sync after actions that change XP */
+const xpChangeWatcher = setInterval(()=> {
+  if(state.totalXP !== lastXP){
+    // show spark & sound
+    playSfx('sfx2');
+    syncMyScore();
+    lastXP = state.totalXP;
+  }
+}, 900);
+
+/* small onboarding & restore */
+if(!state._seen){
+  state._seen = true;
+  addActivity('Welcome to FocusForge NEO Edition! Use the Shield + Pomodoro to climb the Leaderboard.');
+  saveState();
+}
+
+/* Render functions */
+renderProfile(); renderLeaderboard(); renderActivity();
+
+/* keyboard shortcuts */
+document.addEventListener('keydown', (ev)=> {
+  if(ev.key === 's' || ev.key === 'S'){ if(pom.running) { $('pausePom').click(); } else { $('startPom').click(); } }
+  if(ev.key === 'r' || ev.key === 'R'){ $('resetPom').click(); }
+});
+
+/* small protective save */
+setInterval(()=> saveState(), 5000);
+
+/* END OF APP JS */
+</script>
+</body>
+</html>
